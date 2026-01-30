@@ -88,7 +88,6 @@
   cursor: pointer;
 }
 
-/* ===== MODAL OVERLAY ===== */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -102,7 +101,6 @@
   z-index: 1000;
 }
 
-/* ===== MODAL BOX ===== */
 .modal {
   width: 400px;
   padding: 2rem;
@@ -113,7 +111,6 @@
   text-align: center;
 }
 
-/* ===== MODAL INPUTS ===== */
 .modal input {
   width: 100%;
   padding: 0.7rem 1rem;
@@ -128,7 +125,6 @@
   border-color: #4caf50;
 }
 
-/* ===== MODAL BUTTON ===== */
 .modal button {
   width: 100%;
   padding: 0.75rem;
@@ -145,13 +141,11 @@
   background: #43a047;
 }
 
-/* ===== MODAL TITLE ===== */
 .modal h2 {
   margin-bottom: 1.2rem;
   color: #2e7d32;
 }
 
-/* ===== FADE ANIMATION ===== */
 @keyframes fadeIn {
   from {
     opacity: 0;

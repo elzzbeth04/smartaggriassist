@@ -156,7 +156,7 @@ const Login = () => {
         </p>
       </div>
 
-      {/* 🔔 PROFILE POPUP */}
+      {/*PROFILE POPUP */}
       {showProfileModal && (
         <div className="modal-overlay">
           <div className="modal">
