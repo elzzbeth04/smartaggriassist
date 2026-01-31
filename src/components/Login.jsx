@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "../supabaseClient";
 import "./Login.css";
 
@@ -10,6 +10,35 @@ const Login = () => {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
+
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [name, setName] = useState("");
+  const [address, setAddress] = useState("");
+  const [age, setAge] = useState("");
+
+  
+  useEffect(() => {
+    const checkUserProfile = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (user) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("id")
+          .eq("id", user.id)
+          .single();
+
+        if (!profile) {
+          setShowProfileModal(true);
+        }
+      }
+    };
+
+    checkUserProfile();
+  }, []);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -17,8 +46,25 @@ const Login = () => {
     setMessage("");
 
     if (isSignup) {
-      // SIGN UP (email verification sent)
+      // SIGN UP → EMAIL VERIFICATION
       const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: "http://localhost:5173",
+        },
+      });
+
+      if (error) {
+        setError(error.message);
+      } else {
+        setMessage(
+          "Verification email sent. Please confirm to complete registration."
+        );
+      }
+    } else {
+      // LOGIN
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
@@ -26,24 +72,47 @@ const Login = () => {
       if (error) {
         setError(error.message);
       } else {
-        setMessage(
-          "Verification email sent. Please confirm before logging in."
-        );
-      }
-    } else {
-      // LOGIN (only works after verification)
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+        const user = data.user;
 
-      if (error) {
-        if (error.message === "Email not confirmed") {
-          setError("Please verify your email before logging in.");
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("id")
+          .eq("id", user.id)
+          .single();
+
+        if (!profile) {
+          setShowProfileModal(true);
         } else {
-          setError(error.message);
+          // window.location.href = "/dashboard";
         }
       }
+    }
+
+    setLoading(false);
+  };
+
+
+  const handleProfileSave = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    const { error } = await supabase.from("profiles").insert({
+      id: user.id,
+      name,
+      address,
+      age: parseInt(age),
+    });
+
+    if (error) {
+      setError(error.message);
+    } else {
+      setShowProfileModal(false);
+      // window.location.href = "/dashboard";
     }
 
     setLoading(false);
@@ -53,11 +122,6 @@ const Login = () => {
     <div className="auth-page">
       <div className="auth-card">
         <h1 className="logo">🌱 SmartAgriAssist</h1>
-        <p className="subtitle">
-          {isSignup
-            ? "Create your account"
-            : "Welcome back, login to continue"}
-        </p>
 
         <form onSubmit={handleSubmit}>
           <input
@@ -80,11 +144,7 @@ const Login = () => {
           {message && <p className="message">{message}</p>}
 
           <button type="submit" disabled={loading}>
-            {loading
-              ? "Please wait..."
-              : isSignup
-              ? "Sign Up"
-              : "Login"}
+            {loading ? "Please wait..." : isSignup ? "Sign Up" : "Login"}
           </button>
         </form>
 
@@ -95,6 +155,45 @@ const Login = () => {
           </span>
         </p>
       </div>
+
+      {/*PROFILE POPUP */}
+      {showProfileModal && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <h2>Complete Your Profile</h2>
+
+            <form onSubmit={handleProfileSave}>
+              <input
+                type="text"
+                placeholder="Full Name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+              />
+
+              <input
+                type="text"
+                placeholder="Address"
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                required
+              />
+
+              <input
+                type="number"
+                placeholder="Age"
+                value={age}
+                onChange={(e) => setAge(e.target.value)}
+                required
+              />
+
+              <button type="submit" disabled={loading}>
+                {loading ? "Saving..." : "Register"}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
