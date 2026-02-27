@@ -5,11 +5,13 @@
   align-items: center;
   background: linear-gradient(135deg, #e8f5e9, #e3f2fd);
   font-family: "Inter", sans-serif;
+  padding: 2rem 1rem; /* prevents card from touching edges on small screens */
 }
 
 .fertilizer-card {
-  width: 420px;
-  padding: 2.5rem;
+  width: 100%;
+  max-width: 480px; /* slightly wider to breathe with 2-col layout */
+  padding: 2rem 2rem 2.5rem;
   background: white;
   border-radius: 20px;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
@@ -18,32 +20,91 @@
 
 .fertilizer-card h1 {
   color: #2e7d32;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.4rem;
+  font-size: 1.6rem;
 }
 
 .subtitle {
   font-size: 0.9rem;
   color: #666;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.8rem;
 }
 
-.fertilizer-card input {
+/* ── Grid layout for grouped fields ── */
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+  text-align: left;
+}
+
+.field-row.three-col {
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.field-group label {
+  font-size: 0.73rem;
+  font-weight: 600;
+  color: #388e3c;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+/* ── Shared input / select styles ── */
+.fertilizer-card input,
+.fertilizer-card select {
   width: 100%;
-  padding: 0.75rem 1rem;
-  margin-bottom: 1rem;
+  box-sizing: border-box; /* fixes overflow caused by padding + 100% width */
+  padding: 0.65rem 0.85rem;
   border-radius: 10px;
-  border: 1px solid #ddd;
-  font-size: 0.95rem;
+  border: 1.5px solid #e0e0e0;
+  font-size: 0.9rem;
+  font-family: inherit;
+  background: #fafafa;
+  color: #333;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
-.fertilizer-card input:focus {
+.fertilizer-card input::placeholder {
+  color: #bdbdbd;
+}
+
+.fertilizer-card input:focus,
+.fertilizer-card select:focus {
   outline: none;
   border-color: #4caf50;
+  box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.13);
+  background: #fff;
 }
 
+/* Fix the select dropdown appearance */
+.fertilizer-card select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24'%3E%3Cpath fill='%23666' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  padding-right: 2rem;
+  cursor: pointer;
+}
+
+/* Full-width single field (e.g. Crop) */
+.full-width {
+  margin-bottom: 0.75rem;
+  text-align: left;
+}
+
+/* ── Button ── */
 .fertilizer-card button {
   width: 100%;
-  padding: 0.8rem;
+  margin-top: 0.5rem;
+  padding: 0.85rem;
   border-radius: 12px;
   border: none;
   background: #4caf50;
@@ -51,16 +112,44 @@
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
 }
 
-.fertilizer-card button:hover {
+.fertilizer-card button:hover:not(:disabled) {
   background: #43a047;
+  transform: translateY(-1px);
 }
 
+.fertilizer-card button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.fertilizer-card button:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+/* ── Result box ── */
 .result-box {
   margin-top: 1.5rem;
-  padding: 1rem;
+  padding: 1rem 1.2rem;
   background: #f1f8e9;
+  border: 1.5px solid #aed581;
   border-radius: 12px;
   color: #2e7d32;
+}
+
+.result-box strong {
+  display: block;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #558b2f;
+  margin-bottom: 0.3rem;
+}
+
+.result-box p {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
 }

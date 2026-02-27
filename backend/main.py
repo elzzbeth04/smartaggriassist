@@ -1,6 +1,15 @@
 from fastapi import FastAPI
+from pydantic import BaseModel
+class FertilizerRequest(BaseModel):
+    temperature: float
+    humidity: float
+    moisture: float
+    soil: str
+    crop: str
+    nitrogen: float
+    phosphorous: float
+    potassium: float
 import pandas as pd
-
 from fastapi.middleware.cors import CORSMiddleware
 from services.post_processing import clamp_price, smooth_price_trend
 from services.price_predictor import train_price_model, predict_future_prices
@@ -10,6 +19,9 @@ from services.market_score import calculate_market_score
 from services.explainability import generate_explanation
 from services.supply_estimator import estimate_supply_from_acreage
 from services.demand_estimator import estimate_demand_from_prices
+from services.fertilizer_service import predict_fertilizer
+
+
 
 
 app = FastAPI(title="SmartAgriAssist Market Backend")
@@ -21,7 +33,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
+@app.post("/predict-fertilizer")
+def fertilizer_endpoint(request: FertilizerRequest):
+    fertilizer = predict_fertilizer(request.dict())
+    return {"fertilizer": fertilizer}
 
 @app.get("/")
 def health_check():
