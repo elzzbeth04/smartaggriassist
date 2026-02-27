@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import { ArrowLeft, Upload, AlertCircle, CheckCircle, Loader } from 'lucide-react';
+import { supabase } from '../supabaseClient';
 import "./LeafDiseasePrediction.css";
 
 function LeafDiseasePrediction({ onBack }) {
@@ -17,7 +18,6 @@ function LeafDiseasePrediction({ onBack }) {
         setError('Please upload an image file');
         return;
       }
-
       setImageFile(file);
       const reader = new FileReader();
       reader.onload = (event) => {
@@ -50,6 +50,45 @@ function LeafDiseasePrediction({ onBack }) {
     }
   };
 
+  // ── Step 1: Upload image to Supabase bucket, return public URL
+  const uploadImageToBucket = async (file) => {
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Date.now()}_${Math.random().toString(36).slice(2)}.${fileExt}`;
+    const filePath = `uploads/${fileName}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('leaf-images')
+      .upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: false,
+      });
+
+    if (uploadError) throw new Error(`Image upload failed: ${uploadError.message}`);
+
+    // Get public URL
+    const { data } = supabase.storage
+      .from('leaf-images')
+      .getPublicUrl(filePath);
+
+    return data.publicUrl;
+  };
+  
+  // ── Step 2: Save prediction result + image URL to predictions table
+  const savePredictionToDB = async (imageUrl, result) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('User not authenticated');
+
+    const { error: dbError } = await supabase.from('predictions').insert({
+      user_id: user.id,
+      image_url: imageUrl,
+      disease_name: result.disease || 'Unknown',
+      confidence: result.confidence || 0,
+      treatment: result.treatment || null,
+    });
+
+    if (dbError) throw new Error(`Failed to save prediction: ${dbError.message}`);
+  };
+
   const handlePredictDisease = async () => {
     if (!imageFile) {
       setError('Please upload an image first');
@@ -60,22 +99,25 @@ function LeafDiseasePrediction({ onBack }) {
     setError(null);
 
     try {
-      const formData = new FormData();
-      formData.append('image', imageFile);
-
+      // Step 1 — Upload to Supabase bucket → get URL
+      const imageUrl = await uploadImageToBucket(imageFile);
+      console.log('✅ Bucket URL:', imageUrl);
+      // Step 2 — Send URL to ML backend for prediction
       const response = await fetch('/api/predict-disease', {
         method: 'POST',
-        body: formData,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image_url: imageUrl }),
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to predict disease');
-      }
-
-      const data = await response.json();
-      setPrediction(data);
+      if (!response.ok) throw new Error('Failed to predict disease');
+      const result = await response.json();
+      console.log('✅ ML Result:', result);
+      // Step 3 — Save image URL + result to Supabase DB
+      await savePredictionToDB(imageUrl, result);
+      console.log('✅ Saved to DB');
+      setPrediction(result);
     } catch (err) {
-      setError(err.message || 'Failed to predict disease. Please try again.');
+      setError(err.message || 'Something went wrong. Please try again.');
       console.error('Prediction error:', err);
     } finally {
       setLoading(false);
@@ -87,9 +129,7 @@ function LeafDiseasePrediction({ onBack }) {
     setImageFile(null);
     setPrediction(null);
     setError(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   return (
@@ -133,7 +173,6 @@ function LeafDiseasePrediction({ onBack }) {
                   <p className="upload-subtext">or click to browse</p>
                 </div>
               )}
-
               <input
                 ref={fileInputRef}
                 type="file"
@@ -162,6 +201,15 @@ function LeafDiseasePrediction({ onBack }) {
                     <span>Predict Disease</span>
                   )}
                 </button>
+              </div>
+            )}
+
+            {/* Upload progress indicator */}
+            {loading && (
+              <div className="upload-status">
+                <p className="upload-status-text">
+                  📤 Uploading image → 🤖 Running analysis → 💾 Saving result...
+                </p>
               </div>
             )}
           </div>
@@ -207,9 +255,7 @@ function LeafDiseasePrediction({ onBack }) {
                 {prediction.treatment && (
                   <div className="detail-item">
                     <label className="detail-label">Recommended Treatment</label>
-                    <p className="detail-value treatment-text">
-                      {prediction.treatment}
-                    </p>
+                    <p className="detail-value treatment-text">{prediction.treatment}</p>
                   </div>
                 )}
 
@@ -221,6 +267,12 @@ function LeafDiseasePrediction({ onBack }) {
                     </p>
                   </div>
                 )}
+
+                {/* Saved confirmation */}
+                <div className="saved-badge">
+                  <CheckCircle size={14} />
+                  <span>Result saved to your history</span>
+                </div>
               </div>
 
               <button className="action-btn predict-btn" onClick={handleClearImage}>
