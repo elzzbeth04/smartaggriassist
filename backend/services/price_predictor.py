@@ -1,5 +1,5 @@
 import pandas as pd
-from prophet import Prophet
+#from prophet import Prophet
 
 
 def train_price_model(csv_path, crop, market):

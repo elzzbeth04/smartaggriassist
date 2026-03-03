@@ -1,11 +1,16 @@
+
 import pandas as pd
 import joblib
 
 # Load once
-fert_model = joblib.load("services/fert_model.pkl")
-le_soil = joblib.load("services/le_soil.pkl")
-le_crop = joblib.load("services/le_crop.pkl")
-le_fert = joblib.load("services/le_fert.pkl")
+fert_model = joblib.load("services/fertiliser/fert_model.pkl")
+le_soil = joblib.load("services/fertiliser/le_soil.pkl")
+le_crop = joblib.load("services/fertiliser/le_crop.pkl")
+le_fert = joblib.load("services/fertiliser/le_fert.pkl")
+
+print("Loaded crop classes:")
+print(le_crop.classes_)   # 👈 THIS MUST BE AFTER LOADING
+
 
 def predict_fertilizer(data: dict):
     soil_encoded = le_soil.transform([data["soil"]])[0]

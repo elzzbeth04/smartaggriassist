@@ -88,9 +88,32 @@ const Fertilizer = () => {
 
         {/* Crop — full width */}
         <div className="field-group full-width">
-          <label>Crop</label>
-          <input type="text" name="crop" placeholder="e.g. Rice, Wheat, Maize"
-            value={formData.crop} onChange={handleChange} />
+          <label>Crop Name</label>
+          <select name="crop" value={formData.crop} onChange={handleChange}>
+  <option value="">Select crop</option>
+  <option value="apple">apple</option>
+  <option value="banana">banana</option>
+  <option value="blackgram">blackgram</option>
+  <option value="chickpea">chickpea</option>
+  <option value="coconut">coconut</option>
+  <option value="coffee">coffee</option>
+  <option value="cotton">cotton</option>
+  <option value="grapes">grapes</option>
+  <option value="jute">jute</option>
+  <option value="kidneybeans">kidneybeans</option>
+  <option value="lentil">lentil</option>
+  <option value="maize">maize</option>
+  <option value="mango">mango</option>
+  <option value="mothbeans">mothbeans</option>
+  <option value="mungbean">mungbean</option>
+  <option value="muskmelon">muskmelon</option>
+  <option value="orange">orange</option>
+  <option value="papaya">papaya</option>
+  <option value="pigeonpeas">pigeonpeas</option>
+  <option value="pomegranate">pomegranate</option>
+  <option value="rice">rice</option>
+  <option value="watermelon">watermelon</option>
+</select>
         </div>
 
         {/* Nitrogen + Phosphorous + Potassium */}
