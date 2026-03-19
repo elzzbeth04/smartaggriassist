@@ -1,8 +1,11 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "../supabaseClient";
 import "./Login.css";
 
 const Login = () => {
+  const navigate = useNavigate();
+
   const [isSignup, setIsSignup] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -10,15 +13,14 @@ const Login = () => {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
-
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [name, setName] = useState("");
   const [address, setAddress] = useState("");
   const [age, setAge] = useState("");
 
-  
+  // ✅ HANDLE SESSION + REDIRECT PROPERLY
   useEffect(() => {
-    const checkUserProfile = async () => {
+    const checkSession = async () => {
       const {
         data: { user },
       } = await supabase.auth.getUser();
@@ -32,12 +34,36 @@ const Login = () => {
 
         if (!profile) {
           setShowProfileModal(true);
+        } else {
+          navigate("/dashboard");
         }
       }
     };
 
-    checkUserProfile();
-  }, []);
+    checkSession();
+
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      async (_, session) => {
+        if (session?.user) {
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("id")
+            .eq("id", session.user.id)
+            .single();
+
+          if (!profile) {
+            setShowProfileModal(true);
+          } else {
+            navigate("/dashboard");
+          }
+        }
+      }
+    );
+
+    return () => {
+      listener.subscription.unsubscribe();
+    };
+  }, [navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -46,24 +72,20 @@ const Login = () => {
     setMessage("");
 
     if (isSignup) {
-      // SIGN UP → EMAIL VERIFICATION
       const { error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          emailRedirectTo: "http://localhost:5173",
+          emailRedirectTo: window.location.origin,
         },
       });
 
       if (error) {
         setError(error.message);
       } else {
-        setMessage(
-          "Verification email sent. Please confirm to complete registration."
-        );
+        setMessage("Check your email to verify your account.");
       }
     } else {
-      // LOGIN
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -83,14 +105,13 @@ const Login = () => {
         if (!profile) {
           setShowProfileModal(true);
         } else {
-          // window.location.href = "/dashboard";
+          navigate("/dashboard");
         }
       }
     }
 
     setLoading(false);
   };
-
 
   const handleProfileSave = async (e) => {
     e.preventDefault();
@@ -112,7 +133,7 @@ const Login = () => {
       setError(error.message);
     } else {
       setShowProfileModal(false);
-      // window.location.href = "/dashboard";
+      navigate("/dashboard");
     }
 
     setLoading(false);
@@ -156,7 +177,6 @@ const Login = () => {
         </p>
       </div>
 
-      {/*PROFILE POPUP */}
       {showProfileModal && (
         <div className="modal-overlay">
           <div className="modal">
