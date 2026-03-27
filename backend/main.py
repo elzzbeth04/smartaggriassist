@@ -27,6 +27,7 @@ from services.demand_estimator import estimate_demand_from_prices
 
 app = FastAPI(title="SmartAgriAssist Backend")
 
+
 # =========================
 # CORS
 # =========================

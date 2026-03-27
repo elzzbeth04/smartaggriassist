@@ -1,0 +1,1 @@
+['Alluvial' 'Black Soil' 'Clay Loam' 'Loamy' 'Red Soil' 'Sandy Loam']
