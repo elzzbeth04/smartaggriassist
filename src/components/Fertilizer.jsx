@@ -78,10 +78,11 @@ const Fertilizer = () => {
             <select name="soil" value={formData.soil} onChange={handleChange}>
               <option value="">Select type</option>
               <option value="Loamy">Loamy</option>
-              <option value="Sandy">Sandy</option>
-              <option value="Clayey">Clayey</option>
-              <option value="Black">Black</option>
-              <option value="Red">Red</option>
+              <option value="Sandy Loam">Sandy Loam</option>
+              <option value="Clay Loam">Clay Loam</option>
+              <option value="Black Soil">Black Soil</option>
+              <option value="Red Soil">Red Soil</option>
+              <option value="Alluvial">Alluvial</option>
             </select>
           </div>
         </div>
