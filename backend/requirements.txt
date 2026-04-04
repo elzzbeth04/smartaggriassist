@@ -4,4 +4,13 @@ pandas
 numpy
 prophet
 scikit-learn
+python-multipart
+fastapi
+uvicorn
+pydantic
+pandas
+tensorflow
+numpy
+pillow
+python-multipart
 plotly

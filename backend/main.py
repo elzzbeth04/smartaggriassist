@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import pandas as pd
-
+from services.leaf_disease_project.disease_router import router as disease_router
 # =========================
 # SERVICE IMPORTS
 # =========================
@@ -24,10 +24,8 @@ from services.demand_estimator import estimate_demand_from_prices
 # =========================
 # APP INITIALIZATION
 # =========================
-
-app = FastAPI(title="SmartAgriAssist Backend")
-
-
+app = FastAPI(title="SmartAgriAssist Market Backend")
+app.include_router(disease_router)
 # =========================
 # CORS
 # =========================
