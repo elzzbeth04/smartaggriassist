@@ -14,13 +14,11 @@ function App() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Get session once
     supabase.auth.getSession().then(({ data }) => {
       setUser(data?.session?.user ?? null);
       setLoading(false);
     });
 
-    // Listen for login/logout
     const { data: listener } = supabase.auth.onAuthStateChange(
       (_event, session) => {
         setUser(session?.user ?? null);
@@ -34,11 +32,8 @@ function App() {
 
   return (
     <Routes>
-      {/* Login page */}
-      <Route
-        path="/"
-        element={user ? <Navigate to="/dashboard" /> : <Login />}
-      />
+      {/* ✅ ALWAYS SHOW LOGIN FIRST */}
+      <Route path="/" element={<Login />} />
 
       {/* Protected pages */}
       <Route

@@ -31,7 +31,6 @@ function Dashboard() {
         data: { user },
       } = await supabase.auth.getUser();
 
-      // 🚨 Not logged in → kick out
       if (!user) {
         navigate("/");
         return;
@@ -44,7 +43,6 @@ function Dashboard() {
         .single();
 
       if (error || !data) {
-        // 🚨 Profile missing → force back to login flow
         navigate("/");
         return;
       }
@@ -68,6 +66,24 @@ function Dashboard() {
       document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // ✅ ✅ ONLY ADDITION (CHATBOT — NOTHING ELSE TOUCHED)
+  useEffect(() => {
+    if (document.getElementById("botpress-script")) return;
+
+    const script1 = document.createElement("script");
+    script1.src = "https://cdn.botpress.cloud/webchat/v3.6/inject.js";
+    script1.async = true;
+    script1.id = "botpress-script";
+
+    const script2 = document.createElement("script");
+    script2.src =
+      "https://files.bpcontent.cloud/2025/07/14/07/20250714074253-USWUMO6D.js";
+    script2.defer = true;
+
+    document.body.appendChild(script1);
+    document.body.appendChild(script2);
+  }, []);
+
   // ✅ LOGOUT
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -84,7 +100,6 @@ function Dashboard() {
       .slice(0, 2);
   };
 
-  // ✅ PAGE ROUTING (INTERNAL)
   if (currentPage === "disease-prediction") {
     return <LeafDiseasePrediction onBack={() => setCurrentPage("dashboard")} />;
   }
@@ -136,7 +151,6 @@ function Dashboard() {
     },
   ];
 
-  // 🚨 LOADING STATE (you didn’t handle this before)
   if (!profile) {
     return <div className="loading-screen">Loading...</div>;
   }
